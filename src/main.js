@@ -13,19 +13,30 @@ function CreateMainWindow(){
             preload: path.join(__dirname, "script.js"),
         },
     });
-    mainWindow.loadFile(path.join(__dirname, "main-window.html"));
-    mainWindow.on("closed", () => {
-        mainWindow = null;
-    });
+    mainWindow.loadFile(path.join(__dirname, "index.html"));
+    
+    mainWindow.webContents.openDevTools()
 }
-app.on("ready", () => {
-    CreateMainWindow();
-});
+app.on("ready", CreateMainWindow)
+
+app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      CreateMainWindow();
+    }
+})
+
+app.on('window-all-closed', () => {
+  
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
+
 
 ipcMain.on("screenshot:capture", (e, value) => {
     desktopCapturer
     .getSources({
-        types: ["screen"],
+        types: ["window", "screen"],
         thumbnailSize: { width: 1920, height: 1080},
     })
     .then((sources) => {
